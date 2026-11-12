@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Prompt optimizer",
+    "description": "Adds a button on the right of the composer: click to rewrite the draft, Shift+click for a structured brief, Alt+click to compress it. The rewrite reads the recent turns of the session, then shows your draft beside the result in a card above the composer, so nothing is overwritten until you accept. Each click makes one extra model request, on the model the composer is set to.",
+    "detail": "docs/DETAIL.md"
+  }
+}

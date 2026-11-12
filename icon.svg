@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <defs>
+    <linearGradient id="dpo-icon-fill" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4c7dff"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="36" height="36" rx="10" fill="url(#dpo-icon-fill)"/>
+  <path d="M14.6 8.6l2.15 5.05 5.05 2.15-5.05 2.15-2.15 5.05-2.15-5.05L7.4 15.8l5.05-2.15z" fill="#ffffff"/>
+  <path d="M24.3 18.6l1.15 2.65 2.65 1.15-2.65 1.15-1.15 2.65-1.15-2.65-2.65-1.15 2.65-1.15z" fill="#ffffff" fill-opacity="0.75"/>
+</svg>
