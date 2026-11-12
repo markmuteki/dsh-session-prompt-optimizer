@@ -1,5 +1,5 @@
 /**
- * dsh-prompt-optimizer — client half.
+ * dsh-session-prompt-optimizer — client half.
  *
  * Adds one compact button to the composer tool row, right before the model
  * chip. Clicking it posts the draft to the host half; the rewrite is NOT written
@@ -9,7 +9,7 @@
  */
 
 window.__ModuleLoader__.load({
-  id: '@local/dsh-prompt-optimizer',
+  id: 'dsh-session-prompt-optimizer',
   factory(require) {
     const module = { exports: {} }
     const exports = module.exports
@@ -22,7 +22,7 @@ window.__ModuleLoader__.load({
     const useEffect = React.useEffect
     const useRef = React.useRef
 
-    const PACKAGE = '@local/dsh-prompt-optimizer'
+    const PACKAGE = 'dsh-session-prompt-optimizer'
     const BUTTON_SLOT = 'conversation.input.right'
     // Full-width entries ABOVE the composer card, stacked in the composer flex
     // column: the card takes its own row, so it needs no absolute positioning

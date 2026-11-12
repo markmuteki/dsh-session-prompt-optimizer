@@ -1,5 +1,5 @@
 /**
- * dsh-prompt-optimizer — session context for the rewriter.
+ * dsh-session-prompt-optimizer — session context for the rewriter.
  *
  * A draft written into a live session is rarely self-contained: "改一下那个按钮"
  * leans on what the conversation already established. The rewriter therefore

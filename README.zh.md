@@ -1,6 +1,6 @@
 ![输入框工具栏里的优化按钮，位于模型选择器左侧](docs/preview.svg)
 
-# dsh-composer-prompt-optimizer
+# dsh-session-prompt-optimizer
 
 [English](README.md) · MIT · [DeepSeek Harness](https://github.com/deepseek-ai/dsh) 插件
 
@@ -10,13 +10,13 @@
 ## 安装
 
 ```sh
-dsh plugin --profile web add github:markmuteki/dsh-composer-prompt-optimizer
+dsh plugin --profile web add github:markmuteki/dsh-session-prompt-optimizer
 ```
 
 或者从 npm：
 
 ```sh
-dsh plugin --profile web add dsh-composer-prompt-optimizer
+dsh plugin --profile web add dsh-session-prompt-optimizer
 ```
 
 装完重启 `dsh web`。不需要任何配置。

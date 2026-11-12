@@ -1,5 +1,5 @@
 /**
- * dsh-prompt-optimizer — upstream template sync.
+ * dsh-session-prompt-optimizer — upstream template sync.
  *
  * The rewrite instructions are not baked into this plugin: they are the
  * `user-optimize` templates that linshenkx/prompt-optimizer ships, fetched from
@@ -242,7 +242,7 @@ async function githubJson(url) {
   const response = await fetch(url, {
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'dsh-prompt-optimizer',
+      'User-Agent': 'dsh-session-prompt-optimizer',
       'X-GitHub-Api-Version': '2022-11-28',
     },
     signal: AbortSignal.timeout(UPSTREAM.requestTimeoutMs),

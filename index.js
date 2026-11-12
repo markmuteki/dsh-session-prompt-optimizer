@@ -1,5 +1,5 @@
 /**
- * dsh-prompt-optimizer — host half.
+ * dsh-session-prompt-optimizer — host half.
  *
  * Owns the one same-origin endpoint the composer button calls: it takes a draft
  * message, asks the harness LLM service for a sharper version of it, and returns
@@ -24,7 +24,7 @@ import { appendContext, briefSummary, readBrief } from './context.js'
 
 export const inject = ['webServer', 'timer']
 
-const PACKAGE = 'dsh-prompt-optimizer'
+const PACKAGE = 'dsh-session-prompt-optimizer'
 const OPTIMIZE_PATH = '/_prompt-optimizer/optimize'
 const HEALTH_PATH = '/_prompt-optimizer/health'
 const REFRESH_PATH = '/_prompt-optimizer/refresh'

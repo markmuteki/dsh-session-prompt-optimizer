@@ -1,6 +1,6 @@
 ![The optimize button in the composer tool row, left of the model chip](docs/preview.svg)
 
-# dsh-composer-prompt-optimizer
+# dsh-session-prompt-optimizer
 
 [中文说明](README.zh.md) · MIT · a plugin for [DeepSeek Harness](https://github.com/deepseek-ai/dsh)
 
@@ -11,13 +11,13 @@ composer. Your text is only replaced when you say so.
 ## Install
 
 ```sh
-dsh plugin --profile web add github:markmuteki/dsh-composer-prompt-optimizer
+dsh plugin --profile web add github:markmuteki/dsh-session-prompt-optimizer
 ```
 
 or from npm:
 
 ```sh
-dsh plugin --profile web add dsh-composer-prompt-optimizer
+dsh plugin --profile web add dsh-session-prompt-optimizer
 ```
 
 Restart `dsh web` after installing. No configuration is needed.

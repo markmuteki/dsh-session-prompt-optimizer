@@ -1,17 +1,17 @@
 {
-  "name": "dsh-composer-prompt-optimizer",
+  "name": "dsh-session-prompt-optimizer",
   "version": "1.2.1",
   "type": "module",
   "description": "Composer button for DeepSeek Harness that rewrites the draft into a sharper prompt and shows the result beside your text before anything is replaced.",
   "license": "MIT",
   "author": "markmuteki",
-  "homepage": "https://github.com/markmuteki/dsh-composer-prompt-optimizer#readme",
+  "homepage": "https://github.com/markmuteki/dsh-session-prompt-optimizer#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/markmuteki/dsh-composer-prompt-optimizer.git"
+    "url": "git+https://github.com/markmuteki/dsh-session-prompt-optimizer.git"
   },
   "bugs": {
-    "url": "https://github.com/markmuteki/dsh-composer-prompt-optimizer/issues"
+    "url": "https://github.com/markmuteki/dsh-session-prompt-optimizer/issues"
   },
   "keywords": [
     "dsh",
