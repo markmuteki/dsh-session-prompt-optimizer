@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-prompt-optimizer",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "description": "Composer button for DeepSeek Harness that rewrites the draft into a sharper prompt and shows the result beside your text before anything is replaced.",
   "license": "MIT",

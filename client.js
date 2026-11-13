@@ -276,14 +276,14 @@ window.__ModuleLoader__.load({
   font: inherit;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  max-height: 150px;
+  max-height: min(40vh, 320px);
   overflow: auto;
 }
 .dpo-original {
   color: var(--dsw-alias-label-secondary);
 }
 .dpo-edited {
-  min-height: 72px;
+  min-height: 96px;
   resize: vertical;
   color: var(--dsw-alias-label-primary);
   outline: none;

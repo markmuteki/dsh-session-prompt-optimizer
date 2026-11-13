@@ -90,6 +90,15 @@ the next click uses them. Nothing is installed, no restart is needed, and the
 plugin keeps working from its cached copy while offline — with the built-in
 prompt as the last resort if there has never been a successful download.
 
+The template supplies the method; the plugin still appends its own rules on top of
+it. The draft's requirements, numbers, names, paths and acceptance criteria all
+have to survive the rewrite — reorganising is allowed, dropping an item to look
+tidy is not — and the mode's own shape is stated even when a template is in use,
+so structured mode may still grow to twice the draft while concise mode may not.
+The output budget follows the draft size and the model's own limit (16,384 tokens
+at most), and a rewrite that stops at the token limit is continued once instead
+of being handed back cut in half.
+
 The cache lives in `.state/upstream.json` beside the plugin. `GET
 /_prompt-optimizer/health` reports the release it is following, and `POST
 /_prompt-optimizer/refresh` forces a check immediately. A download that fails

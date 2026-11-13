@@ -32,7 +32,11 @@ const REFRESH_PATH = '/_prompt-optimizer/refresh'
 const MIN_DRAFT_CHARS = 2
 const MAX_DRAFT_CHARS = 12000
 const MAX_BODY_BYTES = 1024 * 1024
-const MAX_OUTPUT_TOKENS = 4096
+/** One rewrite may run this long before the model's own limit and the draft size are applied. */
+const MAX_OUTPUT_TOKENS = 16384
+const MIN_OUTPUT_TOKENS = 600
+/** One continuation round when the model stops at the token limit with text already streamed. */
+const CONTINUE_ROUNDS = 1
 const TIMEOUT_MS = 45000
 
 /** A lone slash command is not a prompt: rewriting it would break the command. */
@@ -75,6 +79,19 @@ const MODE_PROMPTS = {
     'Shape: compress hard. Keep the intent and every constraint, cut filler, repetition and hedging, and let each remaining word earn its place. Shorter than the draft.',
   professional:
     'Shape: make the request precise and professional. Replace vague wording with concrete, checkable requirements, and state the standards a finished result must meet. Do not lengthen it for its own sake.',
+}
+
+/**
+ * MODE_PROMPTS only reaches the model when no upstream template is cached, so the
+ * mode's own promise (structured may grow, concise must not) is repeated here as a
+ * short rule that is appended even when the template wins.
+ */
+const MODE_SHAPES = {
+  auto: 'Shape: stay close to the draft length; restructure only when it makes the request easier to act on.',
+  structured:
+    'Shape: goal in one line first, then the context and constraints the draft carries, then what a finished result must contain. Up to twice the draft length.',
+  concise: 'Shape: shorter than the draft; every constraint the draft carries stays.',
+  professional: 'Shape: precise, checkable requirements, and the standards a finished result must meet.',
 }
 
 class OptimizeFailure extends Error {
@@ -289,9 +306,11 @@ function resolveRoute(ctx, body) {
  */
 function promptFor(mode, draft, brief) {
   const upstream = templateFor(mode, draft)
+  const shape = MODE_SHAPES[mode] ?? MODE_SHAPES.auto
   if (upstream !== null) {
+    const parts = [upstream.system, DSH_RULES, upstream.brevity ? BREVITY_RULE : '', shape]
     return {
-      system: upstream.system + '\n\n' + DSH_RULES + (upstream.brevity ? '\n' + BREVITY_RULE : ''),
+      system: parts.filter(part => part !== '').join('\n\n'),
       user: upstream.user,
       template: { source: 'upstream', ref: upstream.ref, id: upstream.key, name: upstream.name },
     }
@@ -306,18 +325,43 @@ function promptFor(mode, draft, brief) {
 async function rewrite(llm, route, mode, draft, brief) {
   const prompt = promptFor(mode, draft)
   prompt.system = appendContext(prompt.system, brief)
-  const options = {
+  const model = await modelFacts(llm, route)
+  const maxTokens = outputBudget(draft.length, mode, model.maxTokens)
+  const shared = {
     provider: route.provider,
     model: route.model,
     system: prompt.system,
-    messages: [{ role: 'user', content: [{ type: 'text', text: prompt.user }] }],
-    maxTokens: outputBudget(draft.length, mode),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    maxTokens,
+    // The lowest declared effort keeps reasoning from eating the output budget.
+    ...model.effort === undefined ? {} : { reasoningEffort: model.effort },
   }
-  // The lowest declared effort keeps reasoning from eating the output budget.
-  const effort = await lowestEffort(llm, route)
-  if (effort !== undefined) options.reasoningEffort = effort
 
+  let text = ''
+  let kind
+  for (let round = 0; round <= CONTINUE_ROUNDS; round += 1) {
+    const messages = round === 0
+      ? [{ role: 'user', content: [{ type: 'text', text: prompt.user }] }]
+      : [
+        { role: 'user', content: [{ type: 'text', text: prompt.user }] },
+        { role: 'assistant', content: [{ type: 'text', text }] },
+        { role: 'user', content: [{ type: 'text', text: CONTINUE_PROMPT }] },
+      ]
+    const call = await oneRound(llm, { ...shared, messages, signal: AbortSignal.timeout(TIMEOUT_MS) })
+    text += call.text
+    kind = call.kind
+    if (kind !== 'max-tokens') break
+  }
+
+  const clean = cleanResult(text)
+  if (clean === '') throw fail('model-empty', 'the model returned nothing usable', 502)
+  return { text: clean, truncated: kind === 'max-tokens', template: prompt.template }
+}
+
+const CONTINUE_PROMPT =
+  'Your previous answer stopped at the output token limit. Continue it from the exact place it stopped, without repeating what you already wrote. Output only the continuation: no preamble, no explanation.'
+
+/** One streaming call; normalises aborts, provider errors and the finish reason. */
+async function oneRound(llm, options) {
   let streamed = ''
   let finish
   try {
@@ -339,32 +383,34 @@ async function rewrite(llm, route, mode, draft, brief) {
     throw fail('model-error', 'the model call failed: ' + detail, 502)
   }
   if (kind === 'aborted') throw fail('model-timeout', 'the model call was aborted', 504)
-
-  const text = cleanResult(streamed)
-  if (text === '') throw fail('model-empty', 'the model returned nothing usable', 502)
-  return { text, truncated: kind === 'max-tokens', template: prompt.template }
+  return { text: streamed, kind }
 }
 
-async function lowestEffort(llm, route) {
+async function modelFacts(llm, route) {
   try {
     const info = await llm.resolveModelInfo(route.provider, route.model)
     const efforts = info !== undefined && info !== null && info.reasoning !== undefined ? info.reasoning.efforts : undefined
-    if (!Array.isArray(efforts) || efforts.length === 0) return undefined
-    const lowest = efforts[0]
-    if (typeof lowest === 'string') return lowest === '' ? undefined : lowest
-    if (lowest !== null && typeof lowest === 'object' && typeof lowest.id === 'string' && lowest.id !== '') return lowest.id
-    return undefined
+    let effort
+    if (Array.isArray(efforts) && efforts.length > 0) {
+      const lowest = efforts[0]
+      if (typeof lowest === 'string') effort = lowest === '' ? undefined : lowest
+      else if (lowest !== null && typeof lowest === 'object' && typeof lowest.id === 'string' && lowest.id !== '') effort = lowest.id
+    }
+    const maxTokens = info !== undefined && info !== null && typeof info.defaultMaxTokens === 'number' ? info.defaultMaxTokens : undefined
+    return { effort, maxTokens }
   } catch {
-    return undefined
+    return { effort: undefined, maxTokens: undefined }
   }
 }
 
 /** Structured shapes may grow to twice the draft; a compression must not. */
 const OUTPUT_RATIO = { auto: 1.8, structured: 2.8, professional: 2.4, concise: 1.2 }
 
-function outputBudget(characters, mode) {
+function outputBudget(characters, mode, modelMax) {
   const ratio = OUTPUT_RATIO[mode] ?? 1.8
-  return Math.min(MAX_OUTPUT_TOKENS, Math.max(600, Math.ceil(characters * ratio) + 200))
+  const wanted = Math.ceil(characters * ratio) + 200
+  const ceiling = Math.min(MAX_OUTPUT_TOKENS, Number.isFinite(modelMax) ? Math.max(MIN_OUTPUT_TOKENS, modelMax) : MAX_OUTPUT_TOKENS)
+  return Math.max(MIN_OUTPUT_TOKENS, Math.min(ceiling, wanted))
 }
 
 const PREAMBLE = /^(?:sure|certainly|of course|here(?:'s| is| are)|below is|the (?:rewritten|optimized|improved)|rewritten|optimized|好的|好|以下是|这里是|这是|优化后)/iu
