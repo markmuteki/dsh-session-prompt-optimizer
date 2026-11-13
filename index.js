@@ -34,7 +34,7 @@ const MAX_DRAFT_CHARS = 12000
 const MAX_BODY_BYTES = 1024 * 1024
 /** One rewrite may run this long before the model's own limit and the draft size are applied. */
 const MAX_OUTPUT_TOKENS = 16384
-const MIN_OUTPUT_TOKENS = 600
+const MIN_OUTPUT_TOKENS = 1200
 /** One continuation round when the model stops at the token limit with text already streamed. */
 const CONTINUE_ROUNDS = 1
 const TIMEOUT_MS = 45000
@@ -343,7 +343,13 @@ async function rewrite(llm, route, mode, draft, brief) {
       ? [{ role: 'user', content: [{ type: 'text', text: prompt.user }] }]
       : [
         { role: 'user', content: [{ type: 'text', text: prompt.user }] },
-        { role: 'assistant', content: [{ type: 'text', text }] },
+        {
+          role: 'assistant',
+          content: [{ type: 'text', text }],
+          // DSH reads .source.replayState off every assistant message; omitting it
+          // makes the llm service throw "Cannot read properties of undefined".
+          source: { kind: 'model', provider: route.provider, model: route.model },
+        },
         { role: 'user', content: [{ type: 'text', text: CONTINUE_PROMPT }] },
       ]
     const call = await oneRound(llm, { ...shared, messages, signal: AbortSignal.timeout(TIMEOUT_MS) })

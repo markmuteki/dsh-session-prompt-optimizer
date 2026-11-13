@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-prompt-optimizer",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "description": "Composer button for DeepSeek Harness that rewrites the draft into a sharper prompt and shows the result beside your text before anything is replaced.",
   "license": "MIT",
@@ -42,11 +42,15 @@
     "icon.svg"
   ],
   "dsh": {
-    "bundle": { "patch": "./cordis.patch.yml" },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "immediately": true,
-      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
     }
   }
 }
